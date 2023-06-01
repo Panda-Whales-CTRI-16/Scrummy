@@ -26,7 +26,7 @@
 
     
 ### Backend Stretch Goals:
-- [ ] Saving scrum board to user
+- [] Saving scrum board to user
     - [ ] Private boards
     - [ ] Save animal to user
 - [ ] set up Oauth

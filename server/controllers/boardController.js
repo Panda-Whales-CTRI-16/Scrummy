@@ -108,10 +108,10 @@ boardController.updateBoard = async (req, res, next) => {
 boardController.updateBoardUsers = async (req, res, next) => {
   console.log('We are in UPDATE BOARD USERS');
   const { boardID } = req.query;
-  const { username } = req.body;
+  const { username, githubUsername } = req.body;
   try {
     const board = await Board.findById(boardID);
-    const user = await User.findOne({username: username});
+    const user = await User.findOne({ username: username } || { githubUsername : githubUsername });
     board.users.push(user.id);
     board.save();
     console.log(board.users);

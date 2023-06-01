@@ -6,11 +6,24 @@ const bcrypt = require('bcryptjs');
 
 // define user schema
 const userSchema = new Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  username: { type: String, unique: true },
+  password: { type: String },
   email: { type: String, required: false },
-  boards: { type: Map, of: String, default: new Map() }
+  boards: { type: Map, of: String, default: new Map() },
+  githubId: { type: String },
+  githubAccessToken: { type: String },
+  githubAvatarUrl: { type: String },
 }, { minimize: false });
+
+// Set up validation for required fields
+userSchema.path('username').validate(function (value) {
+  return this.githubUsername || value;
+}, 'Either username/password or GitHub info is required.');
+
+userSchema.path('password').validate(function (value) {
+  return this.githubUsername || value;
+}, 'Either username/password or GitHub info is required.');
+
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {

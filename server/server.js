@@ -7,6 +7,10 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 
+// ADDIOTIONAL REQS FOR OAUTH
+const passport = require('passport');
+const GitHubStrategy = require('passport-github2').Strategy;
+
 //---------IMPORT CONTROLLERS--------//
 const userController = require('./controllers/userController.js');
 const cookieController = require('./controllers/cookieController.js');
@@ -39,6 +43,70 @@ const io = socketIO(server, {
   pingTimeout: 1000, // how many ms without a ping packet to consider the connection closed
   pingInterval: 3000, // how many ms before sending a new ping packet
 });
+
+// SET UP PASSPORT FOR GITHUB OAUTH
+passport.use(new GitHubStrategy({
+  clientID: process.env.GITHUB_CLIENT_ID,
+  clientSecret: process.env.GITHUB_CLIENT_SECRET,
+  callbackURL: '/auth/github/callback'
+},
+  async (accessToken, refreshToken, profile, done) => {
+    try {
+    // check for existing user
+      const existingUser = await User.findOne({ githubId: profile.id });
+        // if truthy, return done 
+        if (existingUser) {
+          res.locals.user = existingUser;
+          return done(null, existingUser);
+        } else {
+        const newUser = new User({
+          username: profile.username,
+          githubId: profile.id,
+          githubAccessToken: accessToken ,
+          githubAvatarUrl: profile.photos[0].value
+        })
+        // save user to DB
+        await newUser.save();
+        res.locals.user = newUser;
+        // return done
+        cookieController.setSSIDCookie(req, res, () => {
+          sessionController.startSession(req, res, () => {
+            // Return done after both middleware functions are called
+            return done(null, newUser);
+          });
+        });
+        return done(null, newUser);
+      }
+    } catch (error) {
+      console.log(error);
+      return done({ err: error });
+    }
+  }
+));
+
+// SET UP ROUTES FOR GITHUB OAUTH
+
+  // GET REQUEST TO /auth/github
+  app.get('/auth/github',
+  passport.authenticate('github', { scope: ['user:email'] }));
+
+
+  // GET REQUEST TO /auth/github/callback
+  app.get('/auth/github/callback',
+  passport.authenticate('github', { failureRedirect: '/login' }),
+  (req, res) => {
+    // Redirect or handle successful authentication
+    res.status(200).json(res.locals.user); // to homePage on frontend
+  });
+
+
+
+
+
+
+
+
+
 
 // SET UP ROUTES FOR LOGIN AND SIGNUP
 app.post(

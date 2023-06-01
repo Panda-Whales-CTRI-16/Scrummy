@@ -91,6 +91,30 @@ const Login = () => {2
   const passwordRef = useRef('');
   const navigate = useNavigate();
 
+  const handleOAuth = async (e) => {
+    e.preventDefault();
+    const url = '/auth/github'
+    try {
+      const fetchResponse = await fetch(url, {
+        mode: 'no-cors',
+        headers: {
+          'Content-type': 'application/json; charset=UTF-8',
+        },
+      })
+      const data = await fetchResponse.json();
+      console.log(data);
+      if(fetchResponse.ok){
+      setUsername(data.username)
+      setUserBoards(Object.entries(data.boards))
+      navigate('/home')
+      }
+    } catch (error) {
+      setHasError(true)
+      console.log(error);
+      return {};
+    }
+  };
+
   const handleSubmit = async (e) => {
     const loginUserData = {
       username: usernameRef.current.value,
@@ -147,6 +171,7 @@ const Login = () => {2
           <Button type="submit" value="log in">
             Log In
           </Button>
+          <Button value="Login with github" onClick={handleOAuth}>Login with Github</Button>
         </ButtonContainer>
       </Form>
     </LoginPage>
