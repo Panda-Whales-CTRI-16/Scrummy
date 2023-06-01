@@ -6,7 +6,6 @@ import CreateCard from './CreateCard';
 import Column from './Column';
 import styled, { keyframes } from 'styled-components';
 import { UserContext } from '../userContext';
-import { useNavigate } from 'react-router-dom';
 
 const Header = styled.div`
   display: flex;
@@ -121,7 +120,6 @@ const BoardPage = () => {
   const [tasks, setTasks] = useState(currBoard);
   const [allUsers, setAllUsers] = useState({});
   const [user, setUser] = useState();
-  const navigate = useNavigate();
 
   // Wills 2am idea for storing state of board
   // currBoard is an object and will store tasks, allUsers, and user, as well as boardID and boardName
