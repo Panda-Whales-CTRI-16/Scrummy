@@ -48,6 +48,7 @@ module.exports = {
   },
 
   devServer: {
+    hot: true,
     historyApiFallback: true,
     proxy: {
       '/': 'http://localhost:3000',
